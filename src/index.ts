@@ -21,7 +21,8 @@ const allowedOrigins = [
   "http://localhost:3000",   // React dev
   "http://localhost:5173",   // sometimes React dev runs on this
   "https://carelink.example.com", // production frontend
-  "https://olo-backend.onrender.com"
+  "https://olo-backend.onrender.com",
+  "https://olo-frontend.onrender.com"
 ];
 
 const corsOptions: cors.CorsOptions = {
