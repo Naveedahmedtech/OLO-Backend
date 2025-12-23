@@ -17,22 +17,8 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-const allowedOrigins = [
-  "http://localhost:3000",   // React dev
-  "http://localhost:5173",   // sometimes React dev runs on this
-  "https://carelink.example.com", // production frontend
-  "https://olo-backend.onrender.com",
-  "https://olo-frontend.onrender.com"
-];
-
 const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: "*",
   credentials: true, // allow cookies/authorization headers
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
