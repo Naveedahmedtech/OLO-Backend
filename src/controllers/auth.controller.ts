@@ -31,8 +31,7 @@ export const login = async (req: Request, res: Response) => {
   const isProduction = process.env.NODE_ENV === "production";
   res.cookie("carelink_access_token", result.token, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction
   });
 
   return success(res, result, "Login successful");
@@ -55,8 +54,7 @@ export const logout = async (req: Request, res: Response) => {
   const isProduction = process.env.NODE_ENV === "production";
   res.clearCookie("carelink_access_token", {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction
   });
 
   return success(res, {}, "Logged out successfully");
