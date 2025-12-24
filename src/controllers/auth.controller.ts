@@ -28,10 +28,11 @@ export const login = async (req: Request, res: Response) => {
   const result = await AuthService.loginUser(email, password);
 
   // If using cookies:
+  const isProduction = process.env.NODE_ENV === "production";
   res.cookie("carelink_access_token", result.token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
   });
 
   return success(res, result, "Login successful");
@@ -50,11 +51,12 @@ export const getMe = async (req: AuthRequest, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {
 
-  // 🔹 Clear cookie if token stored there
+  // Clear cookie if token stored there
+  const isProduction = process.env.NODE_ENV === "production";
   res.clearCookie("carelink_access_token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
   });
 
   return success(res, {}, "Logged out successfully");
