@@ -14,6 +14,8 @@ export interface AuthRequest extends Request {
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
   let token: string | null = null;
 
+  console.log("✅✅✅✅ COOKIES", req.cookies)
+
   // 🔹 Get token from Authorization header: "Bearer <token>"
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
@@ -22,6 +24,10 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   // 🔹 Or from cookie if you set cookie in login controller
   if (!token && req.cookies?.carelink_access_token) {
     token = req.cookies.carelink_access_token;
+  }
+
+  if (!token && req.cookies?.token) {
+    token = req.cookies.token;
   }
 
   if (!token) {
