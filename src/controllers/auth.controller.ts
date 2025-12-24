@@ -28,11 +28,13 @@ export const login = async (req: Request, res: Response) => {
   const result = await AuthService.loginUser(email, password);
 
   // Cross-site auth cookie
-  res.cookie("token", result.token, {
+  const cookieDomain = ".onrender.com"
+  res.cookie("carelink_access_token", result.token, {
     httpOnly: true,
     secure: true,
     sameSite: "none",
     path: "/",
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
 
   return success(res, result, "Login successful");
@@ -52,11 +54,13 @@ export const getMe = async (req: AuthRequest, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
 
   // Clear auth cookie
-  res.clearCookie("token", {
+  const cookieDomain = ".onrender.com"
+  res.clearCookie("carelink_access_token", {
     httpOnly: true,
     secure: true,
     sameSite: "none",
     path: "/",
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
 
   return success(res, {}, "Logged out successfully");
