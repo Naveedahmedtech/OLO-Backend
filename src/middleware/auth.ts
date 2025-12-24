@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { AppError } from "../utils/errors";
 
 const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key";
+const DEBUG_AUTH = process.env.DEBUG_AUTH === "1";
 
 export interface AuthRequest extends Request {
   user?: {
@@ -14,20 +15,31 @@ export interface AuthRequest extends Request {
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
   let token: string | null = null;
 
-  console.log("✅✅✅✅ COOKIES", req)
+  if (DEBUG_AUTH) {
+    const cookieKeys = Object.keys(req.cookies || {});
+    const origin = req.headers.origin || "n/a";
+    const hasCookieHeader = Boolean(req.headers.cookie);
+    const hasAuthHeader = Boolean(req.headers.authorization);
+    const cookieKeyList = cookieKeys.length ? cookieKeys.join(",") : "none";
+    console.log(
+      `[auth] ${req.method} ${req.originalUrl} origin=${origin} hasCookieHeader=${hasCookieHeader} hasAuthHeader=${hasAuthHeader} cookieKeys=${cookieKeyList}`
+    );
+  }
 
-  // 🔹 Get token from Authorization header: "Bearer <token>"
+  let headerToken: string | null = null;
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-    token = req.headers.authorization.split(" ")[1];
+    const rawHeaderToken = req.headers.authorization.split(" ")[1];
+    if (rawHeaderToken && rawHeaderToken !== "undefined" && rawHeaderToken !== "null") {
+      headerToken = rawHeaderToken;
+    }
   }
 
-  // 🔹 Or from cookie if you set cookie in login controller
-  if (!token && req.cookies?.carelink_access_token) {
-    token = req.cookies.carelink_access_token;
-  }
+  const cookieToken = req.cookies?.carelink_access_token || req.cookies?.token || null;
+  token = headerToken || cookieToken;
 
-  if (!token && req.cookies?.token) {
-    token = req.cookies.token;
+  if (DEBUG_AUTH) {
+    const tokenSource = headerToken ? "header" : cookieToken ? "cookie" : "none";
+    console.log(`[auth] tokenSource=${tokenSource}`);
   }
 
   if (!token) {
@@ -39,6 +51,15 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     req.user = { userId: decoded.userId, role: decoded.role as any };
     next();
   } catch (err) {
+    if (headerToken && cookieToken && cookieToken !== headerToken) {
+      try {
+        const decoded = jwt.verify(cookieToken, JWT_SECRET) as { userId: string; role: string };
+        req.user = { userId: decoded.userId, role: decoded.role as any };
+        return next();
+      } catch (cookieErr) {
+        // fall through to 401
+      }
+    }
     throw new AppError("Not authorized, invalid token", 401);
   }
 };
@@ -55,3 +76,5 @@ export const authorize =
     }
     next();
   };
+
+
