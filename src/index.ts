@@ -15,18 +15,22 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 // Middleware
 app.use(helmet());
-const FRONTEND_ORIGIN = "https://olo-frontend.onrender.com";
 
-const corsOptions: cors.CorsOptions = {
-  origin: FRONTEND_ORIGIN,
-  credentials: true, // allow cookies/authorization headers
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
+app.use(cors({
+  origin: "https://olo-frontend.onrender.com",
+  credentials: true,
+}));
 
-app.use(cors(corsOptions));
+// IMPORTANT: handle preflight
+app.options("*", cors({
+  origin: "https://olo-frontend.onrender.com",
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
